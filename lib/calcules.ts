@@ -201,15 +201,15 @@ export function calculeMomentReprisParAcierComprime(Med: number, Mu1: number): n
  * @returns A's = Mu2 / (Zc × Fyd) (en m²)
  */
 export function calculeSectionArmatureComprimee(Mu2: number, σ_prime_s: number, h: number): number {
-    let dp = 0.1*h
-    let d = 0.9*h
+    const dp = 0.1*h
+    const d = 0.9*h
     return Mu2 / (σ_prime_s * (d - dp) * Math.pow(10, 3))
 }
 
 export function calculeDeformationDeLacierComprimeSAAS(h: number, Ey: number): number {
-    let dp = 0.1*h
-    let d = 0.9*h
-    let ec = 3.5*Math.pow(10, -3)
+    const dp = 0.1*h
+    const d = 0.9*h
+    const ec = 3.5*Math.pow(10, -3)
     return ((Ey - (dp/d))/Ey)*ec
 }
 /**
