@@ -262,26 +262,28 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
       })
 
       // Calcul du bras de levier pour l'armature comprimée (Zc)
-      const Zc = calculeBrasDeLevierZoneComprimee(d, x)
-      steps.push({
-        title: "Calcul du bras de levier pour l'armature comprimée (Zc)",
-        latex: `Z_c = d - 0.4 \\cdot x = ${d.toFixed(2)} - 0.4 \\cdot ${x.toFixed(4)}`,
-        result: `Zc = ${Zc.toFixed(4)} m`,
-      })
+      // const Zc = calculeBrasDeLevierZoneComprimee(d, x)
+      // steps.push({
+      //   title: "Calcul du bras de levier pour l'armature comprimée (Zc)",
+      //   latex: `Z_c = d - 0.4 \\cdot x = ${d.toFixed(2)} - 0.4 \\cdot ${x.toFixed(4)}`,
+      //   result: `Zc = ${Zc.toFixed(4)} m`,
+      // })
+
+
 
       // Calcul de la section d'armature comprimée (A's)
-      A_s_comprimee = calculeSectionArmatureComprimee(Mu2, Fyd, Zc)
+      A_s_comprimee = calculeSectionArmatureComprimee(Mu2, σ_prime_s, h)
       steps.push({
         title: "Calcul de la section d'armature comprimée (A's)",
-        latex: `A'_s = \\frac{M_{u2}}{Z_c \\cdot f_{yd}} = \\frac{${Mu2.toFixed(2)}}{${Zc.toFixed(4)} \\cdot ${Fyd.toFixed(2)}}`,
-        result: `A's = ${A_s_comprimee.toFixed(6)} m² = ${(A_s_comprimee * 10000).toFixed(2)} cm²`,
+        latex: `A'_{s,calc} = \\frac{M_{u2}}{\\sigma'_s \\cdot (d - d') \\cdot 10^3} = \\frac{${Mu2.toFixed(2)}}{${σ_prime_s.toFixed(4)} \\cdot (${0.9*h} - ${0.1*h}) \\cdot 10^3}`,
+        result: `A's,calc = ${A_s_comprimee.toFixed(6)} m² = ${(A_s_comprimee * 10000).toFixed(2)} cm²`,
       })
 
       // Calcul de la section d'armature tendue (As)
-      As = calculeSectionArmatureTendueAvecCompression(Med, Fyd, z)
+      As = calculeSectionArmatureTendueAvecCompression(Med, σs, z, calculeSectionArmatureComprimee(Mu2, σs, h))
       steps.push({
         title: "Calcul de la section d'armature tendue (As)",
-        latex: `A_s = \\frac{M_{Ed}}{f_{yd} \\cdot z} = \\frac{${Med}}{${Fyd.toFixed(2)} \\cdot ${z.toFixed(4)}}`,
+        latex: `A_{s,calc} = \\frac{M_{u1}}{f_{yd} \\cdot z \\cdot 10^3}  + \\frac{M_{u2}}{\\sigma_s \\cdot (d - d') \\cdot 10^3} = \\frac{${Mu1.toFixed(2)}}{${σs.toFixed(2)} \\cdot ${z.toFixed(4)} \\cdot 10^3} + \\frac{${Mu2.toFixed(2)}}{${σs.toFixed(4)} \\cdot (${0.9*h} - ${0.1*h}) \\cdot 10^3}`,
         result: `As = ${As.toFixed(6)} m² = ${(As * 10000).toFixed(2)} cm²`,
       })
 
@@ -297,9 +299,17 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
       // Calcul de la section théorique d'armature (As_th)
       As_th = calculeTheoriqueArmatureSAAS(As, As_min)
       steps.push({
-        title: "Calcul de la section théorique d'armature (As_th)",
+        title: "Calcul de la section théorique d'armature tendue (As_th)",
         latex: `A_{s,th} = max(A_s, A_{s,min}) = max(${(As * 10000).toFixed(2)}, ${(As_min * 10000).toFixed(2)})`,
         result: `As_th = ${As_th.toFixed(6)} m² = ${(As_th * 10000).toFixed(2)} cm²`,
+      })
+
+
+      // Calcul de la section théorique d'armature (As_th)
+      steps.push({
+        title: "Calcul de la section théorique d'armature comprimee (A's_th)",
+        latex: `A'_{s,th} = A'_{s,calc} = ${A_s_comprimee.toFixed(5)}`,
+        result: `As_th = ${A_s_comprimee.toFixed(4)} m² = ${(A_s_comprimee * 10000).toFixed(2)} cm²`,
       })
     }
 

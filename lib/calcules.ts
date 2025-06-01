@@ -200,8 +200,10 @@ export function calculeMomentReprisParAcierComprime(Med: number, Mu1: number): n
  * @param Zc Bras de levier de la zone comprimée (en m)
  * @returns A's = Mu2 / (Zc × Fyd) (en m²)
  */
-export function calculeSectionArmatureComprimee(Mu2: number, Fyd: number, Zc: number): number {
-    return Mu2 / (Zc * Fyd);
+export function calculeSectionArmatureComprimee(Mu2: number, σ_prime_s: number, h: number): number {
+    let dp = 0.1*h
+    let d = 0.9*h
+    return Mu2 / (σ_prime_s * (d - dp) * Math.pow(10, 3))
 }
 
 export function calculeDeformationDeLacierComprimeSAAS(h: number, Ey: number): number {
@@ -236,8 +238,8 @@ export function calculeContrainteAcierS400(Fyd: number): number {
  * @param Z Bras de levier (en m)
  * @returns As = Med / (Z × Fyd) (en m²)
  */
-export function calculeSectionArmatureTendueAvecCompression(Med: number, Fyd: number, Z: number): number {
-    return Med / (Z * Fyd);
+export function calculeSectionArmatureTendueAvecCompression(Med: number, σs: number, Z: number, A_s_comprimee: number): number {
+    return (Med / (Z * σs * Math.pow(10, 3))) + A_s_comprimee;
 }
 
 /**
