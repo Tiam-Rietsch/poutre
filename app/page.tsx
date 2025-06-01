@@ -16,9 +16,9 @@ export default function Home() {
   return (
     <main className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6 text-center">
-        Dimensionnement de Poutres Rectangulaires en Flexion Simple
+        Dimensionnement de Poutres en Flexion  Composee
       </h1>
-      <h2 className="text-xl text-muted-foreground mb-8 text-center">Selon l&apos;Eurocode 2</h2>
+      {/* <h2 className="text-xl text-muted-foreground mb-8 text-center">Selon l&apos;Eurocode 2</h2> */}
 
       <Tabs defaultValue="configuration" value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
