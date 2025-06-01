@@ -29,90 +29,135 @@ interface ConcreteSteelStore {
   setTypeAcier: (type: "S400" | "S500") => void
   updateClasseStructurelle: () => void
   updateMaterialProperties: () => void
+  // New method to update everything in one go
+  updateAllProperties: () => void
 }
 
-export const useConcreteSteelStore = create<ConcreteSteelStore>((set, get) => ({
-  classesExposition: [],
-  classeStructurelle: "",
-  Fck: 0,
-  fcm: 0,
-  fcd: 0,
-  fctm: 0,
-  Ecm: 0,
-  modeFabrication: "sur_place",
-  typeEssai: "cylindrique",
-  typeAcier: "S500",
-  Fyk: TYPE_ACIER.S500.Fyk,
-  Fyd: calculeFyd(TYPE_ACIER.S500.Fyk),
-  ey: TYPE_ACIER.S500.ey,
-  ξy: TYPE_ACIER.S500.uy,
+export const useConcreteSteelStore = create<ConcreteSteelStore>((set, get) => {
+  // Helper function to get initial steel properties
+  const getInitialSteelProps = (type: "S400" | "S500") => {
+    const acierProps = TYPE_ACIER[type]
+    return {
+      Fyk: acierProps.Fyk,
+      Fyd: calculeFyd(acierProps.Fyk),
+      ey: acierProps.ey,
+      ξy: acierProps.uy,
+    }
+  }
 
-  setClassesExposition: (classes) => set({ classesExposition: classes }),
+  return {
+    classesExposition: [],
+    classeStructurelle: "",
+    Fck: 0,
+    fcm: 0,
+    fcd: 0,
+    fctm: 0,
+    Ecm: 0,
+    modeFabrication: "sur_place",
+    typeEssai: "cylindrique",
+    typeAcier: "S500",
+    ...getInitialSteelProps("S500"),
 
-  setModeFabrication: (mode) =>
-    set((state) => {
-      const newState = { ...state, modeFabrication: mode }
-      return newState
-    }),
+    setClassesExposition: (classes) => {
+      set({ classesExposition: classes })
+      // Automatically update dependent properties
+      get().updateAllProperties()
+    },
 
-  setTypeEssai: (type) =>
-    set((state) => {
-      const newState = { ...state, typeEssai: type }
-      return newState
-    }),
+    setModeFabrication: (mode) => {
+      set({ modeFabrication: mode })
+      // Automatically update dependent properties
+      get().updateAllProperties()
+    },
 
-  setTypeAcier: (type) =>
-    set((state) => {
+    setTypeEssai: (type) => {
+      set({ typeEssai: type })
+      // Automatically update dependent properties
+      get().updateAllProperties()
+    },
+
+    setTypeAcier: (type) => {
       const acierProps = TYPE_ACIER[type]
-      return {
-        ...state,
+      set({
         typeAcier: type,
         Fyk: acierProps.Fyk,
         Fyd: calculeFyd(acierProps.Fyk),
         ey: acierProps.ey,
         ξy: acierProps.uy,
-      }
-    }),
+      })
+    },
 
-  updateClasseStructurelle: () =>
-    set((state) => {
+    updateClasseStructurelle: () => {
+      const state = get()
+      
       if (state.classesExposition.length === 0) {
-        return { classeStructurelle: "", Fck: 0 }
+        set({ classeStructurelle: "", Fck: 0 })
+        return
       }
 
-      // Trouver la classe structurelle avec la valeur Fck la plus élevée
+      // Find the structural class with the highest Fck value
       let maxFck = 0
       let maxClasseType = ""
 
       state.classesExposition.forEach((classeType) => {
-        if (CLASSES_STRUCTURALES[classeType]) {
-          const fckValue = CLASSES_STRUCTURALES[classeType][state.modeFabrication][state.typeEssai]
-          if (fckValue > maxFck) {
+        const classeData = CLASSES_STRUCTURALES[classeType]
+        if (classeData) {
+          const fckValue = classeData[state.modeFabrication]?.[state.typeEssai]
+          if (fckValue && fckValue > maxFck) {
             maxFck = fckValue
             maxClasseType = classeType
           }
         }
       })
 
-
-      return {
+      set({
         classeStructurelle: maxClasseType,
         Fck: maxFck,
-      }
-    }),
+      })
+    },
 
-  updateMaterialProperties: () =>
-    set((state) => {
-      const fcm = calculeFcm(state.Fck)
-      const fcd = calculeFc(state.Fck)
-      const fctm = calculeFctm(state.Fck)
-      const Ecm = calculeEcm(fcm)
-
-      return {
-        fcm,
-        fcd,
-        fctm,
-        Ecm,
+    updateMaterialProperties: () => {
+      const state = get()
+      
+      if (state.Fck <= 0) {
+        // Reset properties if no valid Fck
+        set({
+          fcm: 0,
+          fcd: 0,
+          fctm: 0,
+          Ecm: 0,
+        })
+        return
       }
-    }),
-}))
+
+      try {
+        const fcm = calculeFcm(state.Fck)
+        const fcd = calculeFc(state.Fck)
+        const fctm = calculeFctm(state.Fck)
+        const Ecm = calculeEcm(fcm)
+
+        set({
+          fcm,
+          fcd,
+          fctm,
+          Ecm,
+        })
+      } catch (error) {
+        console.error('Error calculating material properties:', error)
+        // Set to safe defaults
+        set({
+          fcm: 0,
+          fcd: 0,
+          fctm: 0,
+          Ecm: 0,
+        })
+      }
+    },
+
+    updateAllProperties: () => {
+      const { updateClasseStructurelle, updateMaterialProperties } = get()
+      updateClasseStructurelle()
+      updateMaterialProperties()
+    },
+  }
+})

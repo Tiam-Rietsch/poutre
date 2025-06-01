@@ -62,9 +62,8 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
 
   runCalculations: () => {
     const { b, h, d, Med } = useGeometryStore.getState()
-    const { Fck, typeAcier, Fyk, Fyd, ey, ξy, updateMaterialProperties } = useConcreteSteelStore.getState()
-    const fcd = calculeFc(Fck)
-    const fctm = calculeFctm(Fck)
+    const { typeAcier, fcd, fctm, Fyk, Fyd, ey, ξy, updateMaterialProperties } = useConcreteSteelStore.getState()
+
 
     // Mettre à jour les propriétés des matériaux
     updateMaterialProperties()
