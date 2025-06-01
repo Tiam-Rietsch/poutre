@@ -41,7 +41,8 @@ export function CalculationsTab({ onComplete }: CalculationsTabProps) {
       <div className="grid gap-6 md:grid-cols-2">
         {stepHistory.map((step, index) => (
           <Card key={index}>
-            <CardHeader>
+            <CardHeader className="flex flex-row justify-start space-x-4 items-center">
+              <div className="bg-primary w-[30px] aspect-square rounded-full text-primary-foreground font-bold text-xl text-center">{index+1}</div>
               <CardTitle>{step.title}</CardTitle>
             </CardHeader>
             <CardContent>
