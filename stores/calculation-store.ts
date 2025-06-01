@@ -13,7 +13,7 @@ import {
   calculeConditionNonFragiliteSCAS,
   calculeTheoriqueArmatureSCAS,
   calculeBrasDeLevierZoneComprimee,
-  calculeContrainteAcierTendu,
+  calculeContrainteAcierS400,
   calculeSectionArmatureTendueAvecCompression,
   calculeMomentReprisParAcierTendu,
   calculeMomentReprisParAcierComprime,
@@ -22,6 +22,7 @@ import {
   calculeTheoriqueArmatureSAAS,
   calculeFc,
   calculeFctm,
+  calculeDeformationDeLacierComprimeSAAS,
 } from "@/lib/calcules"
 
 interface CalculationStep {
@@ -62,7 +63,7 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
 
   runCalculations: () => {
     const { b, h, d, Med } = useGeometryStore.getState()
-    const { typeAcier, fcd, fctm, Fyk, Fyd, ey, ξy, updateMaterialProperties } = useConcreteSteelStore.getState()
+    const { typeAcier, fcd, fctm, Fyk, Fyd, Fck, ey, ξy, μy, updateMaterialProperties } = useConcreteSteelStore.getState()
 
 
     // Mettre à jour les propriétés des matériaux
@@ -74,15 +75,15 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
     const μ = calculeMomentReduitUltimeDeReference(Med, b, d, fcd)
     steps.push({
       title: "Calcul du moment réduit ultime de référence (μ)",
-      latex: `\\mu = \\frac{M_{Ed}}{b \\cdot d^2 \\cdot f_{cd}} = \\frac{${Med}}{${b.toFixed(2)} \\cdot ${d.toFixed(2)}^2 \\cdot ${fcd.toFixed(2)}}`,
+      latex: `\\mu = \\frac{M_{Ed}}{b \\cdot d^2 \\cdot f_{cd}} = \\frac{${Med}}{${b.toFixed(2)} \\cdot ${d.toFixed(2)}^2 \\cdot ${fcd.toFixed(2)} \\cdot 10^3}`,
       result: `μ = ${μ.toFixed(4)}`,
     })
 
     // Vérification si SCAS ou SAAS
-    const isSCAS = estSansArmatureComprime(μ, ξy)
+    const isSCAS = estSansArmatureComprime(μ, μy)
     steps.push({
       title: "Vérification du type de section (SCAS ou SAAS)",
-      latex: `\\mu ${isSCAS ? "\\leq" : ">"} \\xi_y \\Rightarrow ${μ.toFixed(4)} ${isSCAS ? "\\leq" : ">"} ${ξy.toFixed(4)}`,
+      latex: `\\mu ${isSCAS ? "\\leq" : ">"} \\mu_y \\Rightarrow ${μ.toFixed(4)} ${isSCAS ? "\\leq" : ">"} ${μy.toFixed(4)}`,
       result: isSCAS ? "Section Sans Armature Comprimée (SCAS)" : "Section Avec Armature Comprimée (SAAS)",
     })
 
@@ -90,7 +91,9 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
     let x = 0
     let z = 0
     let εs = 0
+    let ε_prime_s = 0
     let σs = 0
+    let σ_prime_s = 0
     let As = 0
     let As_min = 0
     let As_th = 0
@@ -131,7 +134,7 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
 
       // Calcul de la contrainte dans l'acier (σs)
       if (typeAcier === "S500") {
-        σs = calculeContrainteAcierS500(Fyd, εs, ey)
+        σs = calculeContrainteAcierS500(Fyd, εs)
         steps.push({
           title: "Calcul de la contrainte dans l'acier S500 (σs)",
           latex: `\\sigma_s = f_{yd} \\cdot (k + \\frac{(\\varepsilon_s - \\varepsilon_{uk}) \\cdot (k - 1)}{\\varepsilon_{uk} - \\varepsilon_y})`,
@@ -171,10 +174,10 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
       })
     } else {
       // SAAS - Section Avec Armature Comprimée
-      ξ = ξy
+      ξ = calculeParametreE(μy)
       steps.push({
         title: "Paramètre ξ pour SAAS",
-        latex: `\\xi = \\xi_y = ${ξy.toFixed(4)}`,
+        latex: `ξ = ξy = 1.25 \\cdot (1 - \\sqrt{1 - 2 \\cdot ${μy.toFixed(4)}})`,
         result: `ξ = ${ξ.toFixed(4)}`,
       })
 
@@ -194,27 +197,59 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
         result: `z = ${z.toFixed(4)} m`,
       })
 
-      // Calcul de la contrainte dans l'acier (σs)
-      σs = calculeContrainteAcierTendu(Fyd)
+      εs = calculeDeformationAcier(d, x)
       steps.push({
-        title: "Calcul de la contrainte dans l'acier (σs)",
-        latex: `\\sigma_s = f_{yd} = ${Fyd.toFixed(2)}`,
-        result: `σs = ${σs.toFixed(2)} MPa`,
+        title: "Calcul de la déformation de l'acier (εs)",
+        latex: `\\varepsilon_s = \\frac{d - x_y}{x_y} \\cdot \\varepsilon_c = \\frac{${d.toFixed(2)} - ${x.toFixed(4)}}{${x.toFixed(4)}} \\cdot 3.5 \\cdot 10^{-3}`,
+        result: `εs = ${εs.toFixed(6)}`,
       })
 
-      // Calcul de la section d'armature tendue (As)
-      As = calculeSectionArmatureTendueAvecCompression(Med, Fyd, z)
+      // Calcul de la contrainte dans l'acier (σs)
+
+      if (Fyk == 400) {
+        σs = calculeContrainteAcierS400(Fyd)
+        steps.push({
+          title: "Calcul de la contrainte dans l'acier (σs)",
+          latex: `\\sigma_s = f_{yd} = ${Fyd.toFixed(2)}`,
+          result: `σs = ${σs.toFixed(2)} MPa`,
+        })
+      } else {
+        σs = calculeContrainteAcierS500(Fyd, εs)
+        steps.push({
+          title: "Calcul de la contrainte dans l'acier (σs)",
+          latex: `σs = f_yd \\cdot \\bigl[ K + \\frac{(\\epsilon_s - \\epsilon_{uk})(k - 1)}{\\epsilon_{uk} - \\epsilon_y} \\bigr]`,
+          result: `σs = ${σs.toFixed(2)}`
+        })
+      }
+
+      ε_prime_s = calculeDeformationDeLacierComprimeSAAS(h, ξ)
       steps.push({
-        title: "Calcul de la section d'armature tendue (As)",
-        latex: `A_s = \\frac{M_{Ed}}{f_{yd} \\cdot z} = \\frac{${Med}}{${Fyd.toFixed(2)} \\cdot ${z.toFixed(4)}}`,
-        result: `As = ${As.toFixed(6)} m² = ${(As * 10000).toFixed(2)} cm²`,
+        title: "calcul deformation de l'acier tendu",
+        latex: `\\epsilon'_s = \\frac{\\epsilon_y - \\frac{d'}{d}}{\\epsilon_y} \\cdot \\epsilon_c = \\frac{${ξ.toFixed(2)} - \\frac{${0.1*h}}{${0.9*h}}}{${ξ.toFixed(2)}} \\cdot 3.5 \\cdot 10^-3`,
+        result: `ε's = ${ε_prime_s.toFixed(4)}`
       })
+
+      if (Fyk == 400) {
+        σ_prime_s = calculeContrainteAcierS400(Fyd)
+        steps.push({
+          title: "Calcul de la contrainte dans l'acier comprimee (σs)",
+          latex: `\\sigma'_s = f_{yd} = ${Fyd.toFixed(2)}`,
+          result: `σ's = ${σ_prime_s.toFixed(3)} MPa`,
+        })
+      } else {
+        σ_prime_s = calculeContrainteAcierS500(Fyd, ε_prime_s)
+        steps.push({
+          title: "Calcul de la contrainte dans l'acier tendu (σ's)",
+          latex: `σ's = f_yd \\cdot \\bigl[ K + \\frac{(\\epsilon'_s - \\epsilon_{uk})(k - 1)}{\\epsilon_{uk} - \\epsilon_y} \\bigr]`,
+          result: `σ's = ${σ_prime_s.toFixed(4)}`
+        })
+      }
 
       // Calcul du moment repris par l'acier tendu (Mu1)
-      const Mu1 = calculeMomentReprisParAcierTendu(z, As, Fyd)
+      const Mu1 = calculeMomentReprisParAcierTendu(z, x, fcd, b)
       steps.push({
         title: "Calcul du moment repris par l'acier tendu (Mu1)",
-        latex: `M_{u1} = A_s \\cdot f_{yd} \\cdot z = ${As.toFixed(6)} \\cdot ${Fyd.toFixed(2)} \\cdot ${z.toFixed(4)}`,
+        latex: `M_{u1} = 0.8 \\cdot b \\cdot x_y \\cdot f_{cd} \\cdot Z_y = 0.8 \\cdot ${b.toFixed(2)} \\cdot ${x.toFixed(2)} \\cdot ${fcd.toFixed(2)} \\cdot ${z.toFixed(2)}`,
         result: `Mu1 = ${Mu1.toFixed(2)} kN·m`,
       })
 
@@ -241,6 +276,15 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
         latex: `A'_s = \\frac{M_{u2}}{Z_c \\cdot f_{yd}} = \\frac{${Mu2.toFixed(2)}}{${Zc.toFixed(4)} \\cdot ${Fyd.toFixed(2)}}`,
         result: `A's = ${A_s_comprimee.toFixed(6)} m² = ${(A_s_comprimee * 10000).toFixed(2)} cm²`,
       })
+
+      // Calcul de la section d'armature tendue (As)
+      As = calculeSectionArmatureTendueAvecCompression(Med, Fyd, z)
+      steps.push({
+        title: "Calcul de la section d'armature tendue (As)",
+        latex: `A_s = \\frac{M_{Ed}}{f_{yd} \\cdot z} = \\frac{${Med}}{${Fyd.toFixed(2)} \\cdot ${z.toFixed(4)}}`,
+        result: `As = ${As.toFixed(6)} m² = ${(As * 10000).toFixed(2)} cm²`,
+      })
+
 
       // Calcul de la section minimale d'armature (As_min)
       As_min = calculeConditionNonFragiliteSAAS(b, d, fctm, Fyk)

@@ -66,7 +66,7 @@ export function calculeParametreEy(ey: number): number {
  * @returns μ = Med / (b × d² × Fcd)
  */
 export function calculeMomentReduitUltimeDeReference(Med: number, b: number, d: number, Fcd: number): number {
-    return Med / (b * Math.pow(d, 2) * Fcd);
+    return Med / (b * Math.pow(d, 2) * Fcd * Math.pow(10, 3));
 }
 
 /**
@@ -128,9 +128,10 @@ export function calculeDeformationAcier(d: number, x: number): number {
  * @param Ey Déformation limite de l’acier (en m/m)
  * @returns σs (en MPa)
  */
-export function calculeContrainteAcierS500(Fyd: number, Es: number, Ey: number): number {
+export function calculeContrainteAcierS500(Fyd: number, Es: number): number {
     const k = 1.08;
     const euk = 5e-3;
+    const Ey = 2.17*Math.pow(10, -3)
     return Fyd * (k + ((Es - euk) * (k - 1)) / (euk - Ey));
 }
 
@@ -172,13 +173,14 @@ export function calculeTheoriqueArmatureSCAS(As_calc: number, As_min: number): n
 
 /**
  * Calcule le moment repris par le béton tendu
- * @param Z Bras de levier (en m)
- * @param As Section d’acier tendu (en m²)
- * @param Fyd Résistance de calcul de l’acier (en MPa)
+ * @param Zy Bras de levier (en m)
+ * @param Fcd Section d’acier tendu (en m²)
+ * @param xy Résistance de calcul de l’acier (en MPa)
+ * @param b 
  * @returns Mu1 = Z × As × Fyd (en kN·m)
  */
-export function calculeMomentReprisParAcierTendu(Z: number, As: number, Fyd: number): number {
-    return Z * As * Fyd;
+export function calculeMomentReprisParAcierTendu(Zy: number, xy: number, Fcd: number, b: number): number {
+    return 0.8 * b * xy * Fcd * Zy;
 }
 
 /**
@@ -202,6 +204,12 @@ export function calculeSectionArmatureComprimee(Mu2: number, Fyd: number, Zc: nu
     return Mu2 / (Zc * Fyd);
 }
 
+export function calculeDeformationDeLacierComprimeSAAS(h: number, Ey: number): number {
+    let dp = 0.1*h
+    let d = 0.9*h
+    let ec = 3.5*Math.pow(10, -3)
+    return ((Ey - (dp/d))/Ey)*ec
+}
 /**
  * Calcule le bras de levier des forces internes côté armature comprimée
  * @param d Hauteur utile de la poutre (en m)
@@ -217,7 +225,7 @@ export function calculeBrasDeLevierZoneComprimee(d: number, x: number): number {
  * @param Fyd Résistance de calcul de l’acier (en MPa)
  * @returns σs = Fyd (en MPa), supposant comportement plastique parfait
  */
-export function calculeContrainteAcierTendu(Fyd: number): number {
+export function calculeContrainteAcierS400(Fyd: number): number {
     return Fyd;
 }
 
