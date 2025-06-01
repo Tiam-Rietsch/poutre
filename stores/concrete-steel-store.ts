@@ -23,6 +23,7 @@ interface ConcreteSteelStore {
   Fyd: number
   ey: number
   ξy: number
+  μy: number
   setClassesExposition: (classes: string[]) => void
   setModeFabrication: (mode: "sur_place" | "prefabrique") => void
   setTypeEssai: (type: "cylindrique" | "cubique") => void
@@ -42,6 +43,7 @@ export const useConcreteSteelStore = create<ConcreteSteelStore>((set, get) => {
       Fyd: calculeFyd(acierProps.Fyk),
       ey: acierProps.ey,
       ξy: acierProps.uy,
+      μy: acierProps.uy
     }
   }
 
@@ -84,12 +86,13 @@ export const useConcreteSteelStore = create<ConcreteSteelStore>((set, get) => {
         Fyd: calculeFyd(acierProps.Fyk),
         ey: acierProps.ey,
         ξy: acierProps.uy,
+        μy: acierProps.uy
       })
     },
 
     updateClasseStructurelle: () => {
       const state = get()
-      
+  
       if (state.classesExposition.length === 0) {
         set({ classeStructurelle: "", Fck: 0 })
         return
