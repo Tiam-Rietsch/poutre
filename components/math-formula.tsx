@@ -3,17 +3,26 @@
 import { useEffect, useRef } from "react"
 
 // Proper MathJax type declaration
+// Proper MathJax interfaces without 'any'
+interface MathJaxStartup {
+  promise?: Promise<unknown>
+  ready?: () => void
+}
+
+interface MathJaxConfig {
+  tex?: Record<string, unknown>
+  svg?: Record<string, unknown>
+  options?: Record<string, unknown>
+}
+
 declare global {
   interface Window {
     MathJax: {
       typesetPromise?: (elements?: HTMLElement[]) => Promise<void>
       typesetClear?: (elements?: HTMLElement[]) => void
-      tex2svg?: (input: string, options?: any) => HTMLElement
-      startup?: {
-        promise?: Promise<any>
-        ready?: () => void
-      }
-      config?: any
+      tex2svg?: (input: string, options?: Record<string, unknown>) => HTMLElement
+      startup?: MathJaxStartup
+      config?: MathJaxConfig
     }
   }
 }

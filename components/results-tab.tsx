@@ -9,7 +9,7 @@ import { useGeometryStore } from "@/stores/geometry-store"
 export function ResultsTab() {
   const { b, h, d, Med } = useGeometryStore()
   const { typeAcier, Fck, classeStructurelle } = useConcreteSteelStore()
-  const { isSCAS, μ, ξ, x, z, εs, σs, As, As_min, As_th, A_s_comprimee } = useCalculationStore()
+  const { isSCAS, μ, ξ, x, z, As, As_min, As_th, A_s_comprimee } = useCalculationStore()
 
   return (
     <div className="space-y-6">
