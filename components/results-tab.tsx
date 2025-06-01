@@ -105,16 +105,16 @@ export function ResultsTab() {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Armatures tendues</TableCell>
-                <TableCell>{(As).toFixed(2)} m²</TableCell>
-                <TableCell>{(As_min).toFixed(2)} m²</TableCell>
-                <TableCell className="font-bold">{(As_th).toFixed(2)} m²</TableCell>
+                <TableCell>{(As * 10000).toFixed(2)} cm²</TableCell>
+                <TableCell>{(As_min * 10000).toFixed(2)} cm²</TableCell>
+                <TableCell className="font-bold">{(As_th * 10000).toFixed(2)} cm²</TableCell>
               </TableRow>
               {!isSCAS && (
                 <TableRow>
                   <TableCell className="font-medium">Armatures comprimées</TableCell>
-                  <TableCell>{(A_s_comprimee!).toFixed(2)} m²</TableCell>
+                  <TableCell>{(A_s_comprimee! * 10000).toFixed(2)} cm²</TableCell>
                   <TableCell>-</TableCell>
-                  <TableCell className="font-bold">{(A_s_comprimee!).toFixed(2)} m²</TableCell>
+                  <TableCell className="font-bold">{(A_s_comprimee! * 10000).toFixed(2)} cm²</TableCell>
                 </TableRow>
               )}
             </TableBody>
