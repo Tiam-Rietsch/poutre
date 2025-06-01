@@ -250,36 +250,54 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
           <CardTitle>Classes d&apos;exposition</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Sélection</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Exemples</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {CLASSE_EXPOSITIONS.map((classe) => (
-                <TableRow key={classe.type}>
-                  <TableCell>
-                    <Checkbox
-                      checked={classesExposition.includes(classe.type)}
-                      onCheckedChange={(checked) =>
-                        handleClasseExpositionChange(
-                          checked as boolean,
-                          classe.type
-                        )
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>{classe.type}</TableCell>
-                  <TableCell>{classe.description}</TableCell>
-                  <TableCell>{classe.examples}</TableCell>
+          <div className="overflow-x-auto">
+            <Table className="table-fixed w-full">
+              <colgroup>
+                <col className="w-[80px]" />
+                <col className="w-[100px]" />
+                <col className="w-[350px]" />
+                <col className="w-[300px]" />
+              </colgroup>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">Sélection</TableHead>
+                  <TableHead className="w-[100px]">Type</TableHead>
+                  <TableHead className="w-[350px]">Description</TableHead>
+                  <TableHead className="w-[300px]">Exemples</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {CLASSE_EXPOSITIONS.map((classe) => (
+                  <TableRow key={classe.type}>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={classesExposition.includes(classe.type)}
+                        onCheckedChange={(checked) =>
+                          handleClasseExpositionChange(
+                            checked as boolean,
+                            classe.type
+                          )
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">
+                      {classe.type}
+                    </TableCell>
+                    <TableCell className="w-[350px] max-w-[350px] whitespace-normal break-words p-3">
+                      <div className="text-sm leading-relaxed">
+                        {classe.description}
+                      </div>
+                    </TableCell>
+                    <TableCell className="w-[300px] max-w-[300px] whitespace-normal break-words p-3">
+                      <div className="text-sm leading-relaxed text-muted-foreground">
+                        {classe.examples}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -290,7 +308,7 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
       </div>
 
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-        <DialogContent>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Confirmation des données</DialogTitle>
             <DialogDescription>
