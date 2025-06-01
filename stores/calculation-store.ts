@@ -20,6 +20,7 @@ import {
   calculeSectionArmatureComprimee,
   calculeConditionNonFragiliteSAAS,
   calculeTheoriqueArmatureSAAS,
+  calculeFc,
 } from "@/lib/calcules"
 
 interface CalculationStep {
@@ -60,7 +61,8 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
 
   runCalculations: () => {
     const { b, h, d, Med } = useGeometryStore.getState()
-    const { Fck, fcd, fctm, typeAcier, Fyk, Fyd, ey, ξy, updateMaterialProperties } = useConcreteSteelStore.getState()
+    const { Fck, fctm, typeAcier, Fyk, Fyd, ey, ξy, updateMaterialProperties } = useConcreteSteelStore.getState()
+    const fcd = calculeFc(Fck)
 
     // Mettre à jour les propriétés des matériaux
     updateMaterialProperties()

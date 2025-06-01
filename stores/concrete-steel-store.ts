@@ -94,6 +94,7 @@ export const useConcreteSteelStore = create<ConcreteSteelStore>((set, get) => ({
         }
       })
 
+
       return {
         classeStructurelle: maxClasseType,
         Fck: maxFck,
