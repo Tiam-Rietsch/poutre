@@ -217,9 +217,10 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
               <Label htmlFor="type-acier">Type d&apos;acier utilisé</Label>
               <Select
                 value={typeAcier}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
                   setTypeAcier(value as "S400" | "S500")
-                }
+                  updateClasseStructurelle()
+                }}
               >
                 <SelectTrigger id="type-acier">
                   <SelectValue placeholder="Sélectionner un type d'acier" />
