@@ -1,13 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,21 +21,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useGeometryStore } from "@/stores/geometry-store"
-import { useConcreteSteelStore } from "@/stores/concrete-steel-store"
-import { useCalculationStore } from "@/stores/calculation-store"
-import { CLASSE_EXPOSITIONS } from "@/lib/constants"
-import { InfoIcon } from "lucide-react"
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useGeometryStore } from "@/stores/geometry-store";
+import { useConcreteSteelStore } from "@/stores/concrete-steel-store";
+import { useCalculationStore } from "@/stores/calculation-store";
+import { CLASSE_EXPOSITIONS } from "@/lib/constants";
+import { InfoIcon } from "lucide-react";
 
 interface ConfigurationTabProps {
-  onComplete: () => void
+  onComplete: () => void;
 }
 
 export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
-  const { b, h, d, Med, setGeometry } = useGeometryStore()
+  const { b, h, d, Med, setGeometry } = useGeometryStore();
   const {
     classesExposition,
     classeStructurelle,
@@ -42,54 +55,59 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
     setTypeEssai,
     setTypeAcier,
     updateClasseStructurelle,
-  } = useConcreteSteelStore()
-  const { runCalculations } = useCalculationStore()
+  } = useConcreteSteelStore();
+  const { runCalculations } = useCalculationStore();
 
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const [heightRatio, setHeightRatio] = useState<string>("0.9")
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [heightRatio, setHeightRatio] = useState<string>("0.9");
 
   const handleGeometryChange = (field: string, value: string) => {
-    const numValue = Number.parseFloat(value)
+    const numValue = Number.parseFloat(value);
     if (!isNaN(numValue)) {
       if (field === "b") {
-        setGeometry({ b: numValue, h, ratio: Number.parseFloat(heightRatio) })
+        setGeometry({ b: numValue, h, ratio: Number.parseFloat(heightRatio) });
       } else if (field === "h") {
-        setGeometry({ b, h: numValue, ratio: Number.parseFloat(heightRatio) })
+        setGeometry({ b, h: numValue, ratio: Number.parseFloat(heightRatio) });
       } else if (field === "Med") {
-        setGeometry({ b, h, ratio: Number.parseFloat(heightRatio), Med: numValue })
+        setGeometry({
+          b,
+          h,
+          ratio: Number.parseFloat(heightRatio),
+          Med: numValue,
+        });
       }
     }
-  }
+  };
 
   const handleHeightRatioChange = (value: string) => {
-    setHeightRatio(value)
-    setGeometry({ b, h, ratio: Number.parseFloat(value) })
-  }
+    setHeightRatio(value);
+    setGeometry({ b, h, ratio: Number.parseFloat(value) });
+  };
 
   const handleClasseExpositionChange = (checked: boolean, type: string) => {
-    let newClasses = [...classesExposition]
+    let newClasses = [...classesExposition];
 
     if (checked) {
       if (!newClasses.includes(type)) {
-        newClasses.push(type)
+        newClasses.push(type);
       }
     } else {
-      newClasses = newClasses.filter((c) => c !== type)
+      newClasses = newClasses.filter((c) => c !== type);
     }
 
-    setClassesExposition(newClasses)
-    updateClasseStructurelle()
-  }
+    setClassesExposition(newClasses);
+    updateClasseStructurelle();
+  };
 
   const handleValidate = () => {
-    setShowConfirmation(true)
-  }
+    setShowConfirmation(true);
+  };
 
   const handleConfirm = () => {
-    runCalculations()
-    setShowConfirmation(false)
-    onComplete()
-  }
+    runCalculations();
+    setShowConfirmation(false);
+    onComplete();
+  };
 
   return (
     <div className="space-y-6">
@@ -121,7 +139,10 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="d-ratio">Hauteur utile</Label>
-              <Select value={heightRatio} onValueChange={handleHeightRatioChange}>
+              <Select
+                value={heightRatio}
+                onValueChange={handleHeightRatioChange}
+              >
                 <SelectTrigger id="d-ratio">
                   <SelectValue placeholder="Sélectionner un ratio" />
                 </SelectTrigger>
@@ -156,7 +177,10 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
               <Label>Mode de fabrication</Label>
               <RadioGroup
                 value={modeFabrication}
-                onValueChange={(value) => setModeFabrication(value as "sur_place" | "prefabrique")}
+                onValueChange={(value) => {
+                  setModeFabrication(value as "sur_place" | "prefabrique");
+                  updateClasseStructurelle();
+                }}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="sur_place" id="sur_place" />
@@ -171,7 +195,13 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
 
             <div className="space-y-2">
               <Label>Type d&apos;essai</Label>
-              <RadioGroup value={typeEssai} onValueChange={(value) => setTypeEssai(value as "cylindrique" | "cubique")}>
+              <RadioGroup
+                value={typeEssai}
+                onValueChange={(value) => {
+                  setTypeEssai(value as "cylindrique" | "cubique");
+                  updateClasseStructurelle();
+                }}
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="cylindrique" id="cylindrique" />
                   <Label htmlFor="cylindrique">Cylindrique</Label>
@@ -185,7 +215,12 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
 
             <div className="space-y-2">
               <Label htmlFor="type-acier">Type d&apos;acier utilisé</Label>
-              <Select value={typeAcier} onValueChange={(value) => setTypeAcier(value as "S400" | "S500")}>
+              <Select
+                value={typeAcier}
+                onValueChange={(value) =>
+                  setTypeAcier(value as "S400" | "S500")
+                }
+              >
                 <SelectTrigger id="type-acier">
                   <SelectValue placeholder="Sélectionner un type d'acier" />
                 </SelectTrigger>
@@ -199,7 +234,8 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
             <Alert>
               <InfoIcon className="h-4 w-4" />
               <AlertDescription>
-                Classe structurelle retenue: {classeStructurelle || "Non déterminée"}
+                Classe structurelle retenue:{" "}
+                {classeStructurelle || "Non déterminée"}
                 <br />
                 Fck correspondant: {Fck || "0"} MPa
               </AlertDescription>
@@ -228,7 +264,12 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
                   <TableCell>
                     <Checkbox
                       checked={classesExposition.includes(classe.type)}
-                      onCheckedChange={(checked) => handleClasseExpositionChange(checked as boolean, classe.type)}
+                      onCheckedChange={(checked) =>
+                        handleClasseExpositionChange(
+                          checked as boolean,
+                          classe.type
+                        )
+                      }
                     />
                   </TableCell>
                   <TableCell>{classe.type}</TableCell>
@@ -242,14 +283,18 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleValidate}>Valider les données et prévisualiser</Button>
+        <Button onClick={handleValidate}>
+          Valider les données et prévisualiser
+        </Button>
       </div>
 
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmation des données</DialogTitle>
-            <DialogDescription>Veuillez vérifier les données saisies avant de lancer le calcul.</DialogDescription>
+            <DialogDescription>
+              Veuillez vérifier les données saisies avant de lancer le calcul.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <h3 className="font-medium">Données géométriques</h3>
@@ -264,11 +309,15 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
                   <TableCell>{h} m</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Hauteur utile (d)</TableCell>
+                  <TableCell className="font-medium">
+                    Hauteur utile (d)
+                  </TableCell>
                   <TableCell>{d} m</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Moment fléchissant (Med)</TableCell>
+                  <TableCell className="font-medium">
+                    Moment fléchissant (Med)
+                  </TableCell>
                   <TableCell>{Med} kN·m</TableCell>
                 </TableRow>
               </TableBody>
@@ -278,11 +327,17 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
             <Table>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">Classes d&apos;exposition</TableCell>
-                  <TableCell>{classesExposition.join(", ") || "Aucune"}</TableCell>
+                  <TableCell className="font-medium">
+                    Classes d&apos;exposition
+                  </TableCell>
+                  <TableCell>
+                    {classesExposition.join(", ") || "Aucune"}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Classe structurelle</TableCell>
+                  <TableCell className="font-medium">
+                    Classe structurelle
+                  </TableCell>
                   <TableCell>{classeStructurelle}</TableCell>
                 </TableRow>
                 <TableRow>
@@ -290,22 +345,37 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
                   <TableCell>{Fck} MPa</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Mode de fabrication</TableCell>
-                  <TableCell>{modeFabrication === "sur_place" ? "Sur place" : "Préfabriqué"}</TableCell>
+                  <TableCell className="font-medium">
+                    Mode de fabrication
+                  </TableCell>
+                  <TableCell>
+                    {modeFabrication === "sur_place"
+                      ? "Sur place"
+                      : "Préfabriqué"}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Type d&apos;essai</TableCell>
-                  <TableCell>{typeEssai === "cylindrique" ? "Cylindrique" : "Cubique"}</TableCell>
+                  <TableCell className="font-medium">
+                    Type d&apos;essai
+                  </TableCell>
+                  <TableCell>
+                    {typeEssai === "cylindrique" ? "Cylindrique" : "Cubique"}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Type d&apos;acier</TableCell>
+                  <TableCell className="font-medium">
+                    Type d&apos;acier
+                  </TableCell>
                   <TableCell>{typeAcier}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmation(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmation(false)}
+            >
               Annuler
             </Button>
             <Button onClick={handleConfirm}>Lancer le calcul</Button>
@@ -313,5 +383,5 @@ export function ConfigurationTab({ onComplete }: ConfigurationTabProps) {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
