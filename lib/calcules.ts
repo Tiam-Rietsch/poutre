@@ -143,7 +143,7 @@ export function calculeContrainteAcierS500(Fyd: number, Es: number): number {
  * @returns As = Med / (Os × Z) (en m²)
  */
 export function calculeSectionArmature(Med: number, Os: number, Z: number): number {
-    return Med / (Os * Z);
+    return Med / (Os * Z * Math.pow(10, 3));
 }
 
 /**

@@ -153,7 +153,7 @@ export const useCalculationStore = create<CalculationStore>((set, get) => ({
       As = calculeSectionArmature(Med, σs, z)
       steps.push({
         title: "Calcul de la section d'armature (As)",
-        latex: `A_s = \\frac{M_{Ed}}{\\sigma_s \\cdot z} = \\frac{${Med}}{${σs.toFixed(2)} \\cdot ${z.toFixed(4)}}`,
+        latex: `A_s = \\frac{M_{Ed}}{\\sigma_s \\cdot z \\cdot 10^3} = \\frac{${Med}}{${σs.toFixed(2)} \\cdot ${z.toFixed(4)} \\cdot 10^3}`,
         result: `As = ${As.toFixed(6)} m² = ${(As * 10000).toFixed(2)} cm²`,
       })
 
